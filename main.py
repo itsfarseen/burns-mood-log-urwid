@@ -4,7 +4,7 @@ import os
 from bread_crumb import BreadCrumb
 from button import Button
 from mood_log import MoodLog, EMOTIONS, DISTORTIONS
-from mood_log_widgets import EmotionsWidget, ThoughtsWidget
+from mood_log_widgets import MoodLogWidget
 from pprint import pprint
 
 
@@ -29,23 +29,11 @@ for i in range(20):
     dml.add_thought()
     dml.get_thoughts()[-1].set_positive_thought("Testing " + str(i))
 
-dml.set_readonly(True)
-
-def upsetting_event():
-    edit = urwid.Edit(caption="Upsetting Event: ")
-    # urwid.connect_signal(edit, "change", dml.on_update_upsetting_event())
-    return urwid.LineBox(edit)
-
-pile = urwid.Pile(
-    [
-        ("pack", upsetting_event()),
-        ("pack", urwid.LineBox(EmotionsWidget(dml))),
-        ("weight", 1, urwid.LineBox(ThoughtsWidget(dml))),
-    ]
-)
+dml._readonly_guard._dirty = False
+# dml.set_readonly(True)
 
 
-root = urwid.Padding(pile, align="center", width=120)
+root = urwid.Padding(MoodLogWidget(dml), align="center", width=120)
 loop = urwid.MainLoop(root, palette, unhandled_input=exit_on_q, pop_ups=True)
 loop.run()
 # dml.save("test.json")

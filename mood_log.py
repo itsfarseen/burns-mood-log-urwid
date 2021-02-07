@@ -15,6 +15,7 @@ EMOTIONS = [
 class ReadOnlyGuard:
     def __init__(self, readonly=True):
         self._readonly = readonly
+        self._dirty = False
 
     def is_readonly(self):
         return self._readonly
@@ -25,6 +26,10 @@ class ReadOnlyGuard:
 
     def assert_not_readonly(self):
         assert not self._readonly
+        self._dirty = True
+
+    def is_dirty(self):
+        return self._dirty
 
 
 class Emotions:
@@ -175,6 +180,9 @@ class MoodLog:
             Emotions(variants, self._readonly_guard) for variants in EMOTIONS
         ]
         self._thoughts = []
+
+    def is_dirty(self):
+        return self._readonly_guard.is_dirty()
 
     def is_readonly(self):
         return self._readonly_guard.is_readonly()
