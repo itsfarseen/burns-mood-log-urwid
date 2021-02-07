@@ -21,13 +21,15 @@ palette = [
     ("bg", "white", "black"),
 ]
 
-dml = MoodLog()
+dml = MoodLog(readonly=False)
 # if os.path.exists("test.json"):
 #     dml.read("test.json")
 
 for i in range(20):
     dml.add_thought()
     dml.get_thoughts()[-1].set_positive_thought("Testing " + str(i))
+
+dml.set_readonly(True)
 
 def upsetting_event():
     edit = urwid.Edit(caption="Upsetting Event: ")
@@ -44,7 +46,6 @@ pile = urwid.Pile(
 
 
 root = urwid.Padding(pile, align="center", width=120)
-root = urwid.WidgetDisable(root)
 loop = urwid.MainLoop(root, palette, unhandled_input=exit_on_q, pop_ups=True)
 loop.run()
 # dml.save("test.json")

@@ -12,12 +12,31 @@ EMOTIONS = [
 ]
 
 
+class ReadOnlyGuard:
+    def __init__(self, readonly=True):
+        self._readonly = readonly
+
+    def is_readonly(self):
+        return self._readonly
+
+    def set_readonly(self, val):
+        assert isinstance(val, bool)
+        self._readonly = val
+
+    def assert_not_readonly(self):
+        assert not self._readonly
+
+
 class Emotions:
-    def __init__(self, variants):
+    def __init__(self, variants, readonly_guard):
+        self._readonly_guard = readonly_guard
         self._variants = variants
         self._selected = set()
         self._pct_before = 0
         self._pct_after = 0
+
+    def is_readonly(self):
+        return self._readonly_guard.is_readonly()
 
     def variants(self):
         return self._variants
@@ -27,16 +46,22 @@ class Emotions:
         return variant in self._selected
 
     def select(self, variant):
+        self._readonly_guard.assert_not_readonly()
+
         assert variant in self._variants
         self._selected.add(variant)
 
     def unselect(self, variant):
+        self._readonly_guard.assert_not_readonly()
+
         self._selected.remove(variant)
 
     def get_pct_before(self):
         return self._pct_before
 
     def set_pct_before(self, val):
+        self._readonly_guard.assert_not_readonly()
+
         assert isinstance(val, int)
         self._pct_before = val
 
@@ -44,12 +69,15 @@ class Emotions:
         return self._pct_after
 
     def set_pct_after(self, val):
+        self._readonly_guard.assert_not_readonly()
+
         assert isinstance(val, int)
         self._pct_after = val
 
 
 class Distortions:
-    def __init__(self):
+    def __init__(self, readonly_guard):
+        self._readonly_guard = readonly_guard
         self._selected = []
 
     def get_label(self):
@@ -59,38 +87,52 @@ class Distortions:
         return value in self._selected
 
     def select(self, value):
+        self._readonly_guard.assert_not_readonly()
+
         assert value in DISTORTIONS
         self._selected.append(value)
         self._resort()
 
     def unselect(self, value):
+        self._readonly_guard.assert_not_readonly()
+
         self._selected.remove(value)
         self._resort()
 
     def _resort(self):
+        self._readonly_guard.assert_not_readonly()
+
         keys = list(DISTORTIONS.keys())
         self._selected.sort(key=lambda k: keys.index(k))
 
 
 class Thought:
-    def __init__(self):
+    def __init__(self, readonly_guard):
+        self._readonly_guard = readonly_guard
         self._negative_thought = ""
         self._pct_before = 0
         self._pct_after = 0
         self._positive_thought = ""
         self._pct_belief = 0
-        self._distortions = Distortions()
+        self._distortions = Distortions(readonly_guard)
+
+    def is_readonly(self):
+        return self._readonly_guard.is_readonly()
 
     def get_negative_thought(self):
         return self._negative_thought
 
     def set_negative_thought(self, val):
+        self._readonly_guard.assert_not_readonly()
+
         self._negative_thought = val
 
     def get_pct_before(self):
         return self._pct_before
 
     def set_pct_before(self, val):
+        self._readonly_guard.assert_not_readonly()
+
         assert isinstance(val, int)
         self._pct_before = val
 
@@ -98,6 +140,8 @@ class Thought:
         return self._pct_after
 
     def set_pct_after(self, val):
+        self._readonly_guard.assert_not_readonly()
+
         assert isinstance(val, int)
         self._pct_after = val
 
@@ -105,12 +149,16 @@ class Thought:
         return self._positive_thought
 
     def set_positive_thought(self, val):
+        self._readonly_guard.assert_not_readonly()
+
         self._positive_thought = val
 
     def get_pct_belief(self):
         return self._pct_belief
 
     def set_pct_belief(self, val):
+        self._readonly_guard.assert_not_readonly()
+
         assert isinstance(val, int)
         self._pct_belief = val
 
@@ -119,11 +167,20 @@ class Thought:
 
 
 class MoodLog:
-    def __init__(self):
+    def __init__(self, readonly=True):
+        self._readonly_guard = ReadOnlyGuard(readonly)
         self._date = datetime.datetime.now()
         self._upsetting_event = ""
-        self._emotions = [Emotions(variants) for variants in EMOTIONS]
+        self._emotions = [
+            Emotions(variants, self._readonly_guard) for variants in EMOTIONS
+        ]
         self._thoughts = []
+
+    def is_readonly(self):
+        return self._readonly_guard.is_readonly()
+
+    def set_readonly(self, val):
+        return self._readonly_guard.set_readonly(val)
 
     def get_date(self):
         return self._date
@@ -132,13 +189,17 @@ class MoodLog:
         return self._upsetting_event
 
     def set_upsetting_event(self, val):
+        self._readonly_guard.assert_not_readonly()
+
         self._upsetting_event = val
 
     def get_emotions(self):
         return self._emotions
 
     def add_thought(self):
-        thought = Thought()
+        self._readonly_guard.assert_not_readonly()
+
+        thought = Thought(self._readonly_guard)
         self._thoughts.append(thought)
         return thought
 
@@ -146,6 +207,8 @@ class MoodLog:
         return self._thoughts
 
     def delete_thought(self, idx):
+        self._readonly_guard.assert_not_readonly()
+
         del self._thoughts[idx]
 
     # def save(self, filename):

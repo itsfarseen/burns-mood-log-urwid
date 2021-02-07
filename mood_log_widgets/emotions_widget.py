@@ -39,7 +39,9 @@ class EmotionsRow(urwid.WidgetWrap):
         btns = []
         for emotion in self._emotions.variants():
             btn = BreadCrumb(
-                emotion, selected=self._emotions.is_selected(emotion)
+                emotion,
+                selected=self._emotions.is_selected(emotion),
+                readonly=self._emotions.is_readonly(),
             )
             urwid.connect_signal(
                 btn, "change", self._toggle_emotion_cb(emotion)
@@ -48,11 +50,19 @@ class EmotionsRow(urwid.WidgetWrap):
 
         btns_box = urwid.Columns(btns)
 
-        pct_before = urwid.IntEdit(default=self._emotions.get_pct_before())
-        urwid.connect_signal(pct_before, "change", self._update_pct_before_cb())
+        if self._emotions.is_readonly():
+            pct_before = urwid.Text(str(self._emotions.get_pct_before()))
+            pct_after = urwid.Text(str(self._emotions.get_pct_after()))
+        else:
+            pct_before = urwid.IntEdit(default=self._emotions.get_pct_before())
+            urwid.connect_signal(
+                pct_before, "change", self._update_pct_before_cb()
+            )
 
-        pct_after = urwid.IntEdit(default=self._emotions.get_pct_after())
-        urwid.connect_signal(pct_after, "change", self._update_pct_after_cb())
+            pct_after = urwid.IntEdit(default=self._emotions.get_pct_after())
+            urwid.connect_signal(
+                pct_after, "change", self._update_pct_after_cb()
+            )
 
         w = urwid.Columns(
             [

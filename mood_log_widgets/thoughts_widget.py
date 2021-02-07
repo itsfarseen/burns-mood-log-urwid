@@ -13,10 +13,11 @@ class ThoughtsWidget(urwid.WidgetWrap):
             row = self._create_thought_row(thought, idx)
             rows.append(row)
 
-        add_btn = Button("Add Thought")
-        urwid.connect_signal(add_btn, "click", self._add_thought_cb())
-        add_btn = urwid.Padding(add_btn, align="left", width=15)
-        rows.append(add_btn)
+        if not dml.is_readonly():
+            add_btn = Button("Add Thought")
+            urwid.connect_signal(add_btn, "click", self._add_thought_cb())
+            add_btn = urwid.Padding(add_btn, align="left", width=15)
+            rows.append(add_btn)
 
         rows_list = urwid.ListBox(urwid.SimpleFocusListWalker(rows))
         self._rows_list = rows_list
@@ -82,41 +83,52 @@ class ThoughtsRow(urwid.WidgetWrap):
         self._thought: Thought = thought
         ws = []
 
-        negative_thought = urwid.Edit(
-            edit_text=thought.get_negative_thought(), multiline=True
-        )
-        urwid.connect_signal(
-            negative_thought, "change", self._update_negative_thought_cb()
-        )
+        if thought.is_readonly():
+            negative_thought = urwid.Text(thought.get_negative_thought())
+            pct_before = urwid.Text(str(thought.get_pct_before()))
+            pct_after = urwid.Text(str(thought.get_pct_after()))
+            distortions = urwid.Text(self._thought.get_distortions().get_label())
+            positive_thought = urwid.Text(thought.get_positive_thought())
+            pct_belief = urwid.Text(str(thought.get_pct_belief()))
+            del_btn = urwid.Text("")
+
+        else:
+            negative_thought = urwid.Edit(
+                edit_text=thought.get_negative_thought(), multiline=True
+            )
+            urwid.connect_signal(
+                negative_thought, "change", self._update_negative_thought_cb()
+            )
+
+            pct_before = urwid.IntEdit(default=thought.get_pct_before())
+            urwid.connect_signal(pct_before, "change", self._update_pct_before_cb())
+
+            pct_after = urwid.IntEdit(default=thought.get_pct_after())
+            urwid.connect_signal(pct_after, "change", self._update_pct_after_cb())
+
+            distortions = DistortionsPopupLauncher(self._thought.get_distortions())
+
+            positive_thought = urwid.Edit(
+                edit_text=thought.get_positive_thought(), multiline=True
+            )
+            urwid.connect_signal(
+                positive_thought, "change", self._update_positive_thought_cb()
+            )
+
+            pct_belief = urwid.IntEdit(default=thought.get_pct_belief())
+            urwid.connect_signal(pct_belief, "change", self._update_pct_belief_cb())
+
+            del_btn = Button("Del")
+            urwid.connect_signal(
+                del_btn, "click", lambda _btn: self._emit("delete")
+            )
+
         ws.append(("weight", 6, negative_thought))
-
-        pct_before = urwid.IntEdit(default=thought.get_pct_before())
-        urwid.connect_signal(pct_before, "change", self._update_pct_before_cb())
         ws.append(("weight", 1, pct_before))
-
-        pct_after = urwid.IntEdit(default=thought.get_pct_after())
-        urwid.connect_signal(pct_after, "change", self._update_pct_after_cb())
         ws.append(("weight", 1, pct_after))
-
-        distortions = DistortionsPopupLauncher(self._thought.get_distortions())
         ws.append(("weight", 3, distortions))
-
-        positive_thought = urwid.Edit(
-            edit_text=thought.get_positive_thought(), multiline=True
-        )
-        urwid.connect_signal(
-            positive_thought, "change", self._update_positive_thought_cb()
-        )
         ws.append(("weight", 6, positive_thought))
-
-        pct_belief = urwid.IntEdit(default=thought.get_pct_belief())
-        urwid.connect_signal(pct_belief, "change", self._update_pct_belief_cb())
         ws.append(("weight", 1, pct_belief))
-
-        del_btn = Button("Del")
-        urwid.connect_signal(
-            del_btn, "click", lambda _btn: self._emit("delete")
-        )
         ws.append((5, del_btn))
 
         row = urwid.Columns(ws, dividechars=3)
