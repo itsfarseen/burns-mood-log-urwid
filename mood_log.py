@@ -49,7 +49,7 @@ class Emotions:
 
 class Distortions:
     def __init__(self):
-        self._selected = set()
+        self._selected = []
 
     def get_label(self):
         return ", ".join(self._selected)
@@ -59,10 +59,16 @@ class Distortions:
 
     def select(self, value):
         assert value in DISTORTIONS
-        self._selected.add(value)
+        self._selected.append(value)
+        self._resort()
 
     def unselect(self, value):
         self._selected.remove(value)
+        self._resort()
+
+    def _resort(self):
+        keys = list(DISTORTIONS.keys())
+        self._selected.sort(key = lambda k: keys.index(k))
 
 
 class Thought:

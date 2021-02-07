@@ -43,6 +43,6 @@ pile = urwid.Pile(
 
 
 root = urwid.Padding(pile, align="center", width=120)
-loop = urwid.MainLoop(root, palette, unhandled_input=exit_on_q)
+loop = urwid.MainLoop(root, palette, unhandled_input=exit_on_q, pop_ups=True)
 loop.run()
 # dml.save("test.json")

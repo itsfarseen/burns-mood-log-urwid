@@ -1,6 +1,7 @@
 import urwid
-from mood_log import Thought
+from mood_log import Thought, DISTORTIONS, Distortions
 from button import Button
+from bread_crumb import BreadCrumb
 
 
 class ThoughtsWidget(urwid.WidgetWrap):
@@ -97,10 +98,7 @@ class ThoughtsRow(urwid.WidgetWrap):
         urwid.connect_signal(pct_after, "change", self._update_pct_after_cb())
         ws.append(("weight", 1, pct_after))
 
-        distortions = urwid.Button(self._thought.get_distortions().get_label())
-        urwid.connect_signal(
-            distortions, "click", self._open_distortions_popup_cb()
-        )
+        distortions = DistortionsPopupLauncher(self._thought.get_distortions())
         ws.append(("weight", 3, distortions))
 
         positive_thought = urwid.Edit(
@@ -148,13 +146,6 @@ class ThoughtsRow(urwid.WidgetWrap):
 
         return fn
 
-    def _open_distortions_popup_cb(self):
-        def fn(_widget):
-            # TODO
-            pass
-
-        return fn
-
     def _update_positive_thought_cb(self):
         def fn(_widget, val):
             self._thought.set_positive_thought(val)
@@ -172,3 +163,62 @@ class ThoughtsRow(urwid.WidgetWrap):
 
 class DistortionsPopup(urwid.WidgetWrap):
     signals = ["close"]
+
+    def __init__(self, distortions: Distortions):
+        self._distortions = distortions
+
+        items = []
+
+        header = urwid.Text("Select Distortions")
+        header = urwid.AttrMap(header, "bright")
+        items.append(header)
+
+        distortion_keys = DISTORTIONS.keys()
+        for key in distortion_keys:
+            btn = BreadCrumb(
+                key + ": " + DISTORTIONS[key],
+                selected=distortions.is_selected(key),
+            )
+            urwid.connect_signal(btn, "change", self._update_distortion_cb(key))
+            items.append(btn)
+
+        btn = Button("OK")
+        urwid.connect_signal(btn, "click", lambda _btn: self._emit("close"))
+        items.append(btn)
+
+        w = urwid.Pile(items)
+        w = urwid.Filler(urwid.LineBox(w))
+        super().__init__(w)
+
+    def _update_distortion_cb(self, distortion):
+        def fn(_widget, selected):
+            if selected:
+                self._distortions.select(distortion)
+            else:
+                self._distortions.unselect(distortion)
+
+        return fn
+
+
+class DistortionsPopupLauncher(urwid.PopUpLauncher):
+    def __init__(self, distortions: Distortions):
+        self._distortions = distortions
+
+        w = urwid.Button(distortions.get_label())
+        urwid.connect_signal(w, "click", lambda _btn: self.open_pop_up())
+        super().__init__(w)
+
+    def create_pop_up(self):
+        popup = DistortionsPopup(self._distortions)
+        urwid.connect_signal(popup, "close", self._popup_close_cb())
+        return popup
+
+    def _popup_close_cb(self):
+        def fn(_widget):
+            self.close_pop_up()
+            self.original_widget.set_label(self._distortions.get_label())
+
+        return fn
+
+    def get_pop_up_parameters(self):
+        return {"left": 0, "top": 1, "overlay_width": 32, "overlay_height": 7}
