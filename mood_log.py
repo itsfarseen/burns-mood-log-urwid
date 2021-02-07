@@ -1,4 +1,5 @@
 import json
+import datetime
 
 DISTORTIONS = {
     "SB": "Self Blame",
@@ -68,7 +69,7 @@ class Distortions:
 
     def _resort(self):
         keys = list(DISTORTIONS.keys())
-        self._selected.sort(key = lambda k: keys.index(k))
+        self._selected.sort(key=lambda k: keys.index(k))
 
 
 class Thought:
@@ -119,9 +120,13 @@ class Thought:
 
 class MoodLog:
     def __init__(self):
+        self._date = datetime.datetime.now()
         self._upsetting_event = ""
         self._emotions = [Emotions(variants) for variants in EMOTIONS]
         self._thoughts = []
+
+    def get_date(self):
+        return self._date
 
     def get_upsetting_event(self):
         return self._upsetting_event
