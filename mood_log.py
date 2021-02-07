@@ -134,6 +134,9 @@ class MoodLog:
     def get_thoughts(self):
         return self._thoughts
 
+    def delete_thought(self, idx):
+        del self._thoughts[idx]
+
     # def save(self, filename):
     #     json.dump(self.data, open(filename, "w"))
     #
