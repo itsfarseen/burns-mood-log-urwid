@@ -4,6 +4,7 @@ from pathlib import Path
 import pathlib
 import shutil
 import json
+from crypto import Crypto
 
 DISTORTIONS = {
     "SB": "Self Blame",
@@ -315,17 +316,15 @@ class MoodLog:
             shutil.copyfile(path, bakfile)
 
         obj = self.todict()
-        f = open(path, "w")
-        json.dump(obj, f)
-        f.close()
+        contents = json.dumps(obj)
+        Crypto.instance.write_file(path, contents)
 
         self._readonly_guard.clear_dirty()
 
     def load(self):
         path = Path(self._filename)
-        f = open(path, "r")
-        obj = json.load(f)
-        f.close()
+        contents = Crypto.instance.read_file(path)
+        obj = json.loads(contents)
         self.fromdict(obj)
 
         self._readonly_guard.clear_dirty()

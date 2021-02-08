@@ -5,6 +5,8 @@ import sys
 from explorer_widget import ExplorerWidget
 from explorer import Explorer
 from pathlib import Path
+from crypto import Crypto, InvalidPassword
+from getpass import getpass
 
 if len(sys.argv) != 2: # argv[0] is main.py
     print("Usage: dml <directory>")
@@ -34,14 +36,22 @@ palette = [
     ("default", "default", "default"),
 ]
 
+while True:
+    password = getpass()
+    crypto = Crypto(password)
 
-root = urwid.Padding(
-    ExplorerWidget(
-        Explorer(Path(dml_dir)),
-    ),
-    align="center",
-    width=120,
-)
+    root = urwid.Padding(
+        ExplorerWidget(
+            Explorer(Path(dml_dir)),
+        ),
+        align="center",
+        width=120,
+    )
 
-loop = urwid.MainLoop(root, palette, unhandled_input=unhandled_input, pop_ups=True)
-loop.run()
+    loop = urwid.MainLoop(root, palette, unhandled_input=unhandled_input, pop_ups=True)
+    try:
+        loop.run()
+    except InvalidPassword:
+        print("Invalid password. \n")
+        continue
+    break
