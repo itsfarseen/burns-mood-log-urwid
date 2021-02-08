@@ -256,6 +256,9 @@ class MoodLog:
     def is_dirty(self):
         return self._readonly_guard.is_dirty()
 
+    def mark_dirty(self):
+        self._readonly_guard._dirty = True
+
     def is_readonly(self):
         return self._readonly_guard.is_readonly()
 
