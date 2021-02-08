@@ -57,14 +57,19 @@ class HeaderWidget(urwid.WidgetWrap):
         title = urwid.AttrMap(title, "bright")
         title = urwid.Filler(title, top=1)
 
-        upsetting_event = urwid.Edit(
-            caption="Upsetting event: ", edit_text=dml.get_upsetting_event()
-        )
-        urwid.connect_signal(
-            upsetting_event,
-            "change",
-            lambda _w, val: dml.set_upsetting_event(val),
-        )
+        if dml.is_readonly():
+            upsetting_event = urwid.Text(
+                "Upsetting event: " + dml.get_upsetting_event()
+            )
+        else:
+            upsetting_event = urwid.Edit(
+                caption="Upsetting event: ", edit_text=dml.get_upsetting_event()
+            )
+            urwid.connect_signal(
+                upsetting_event,
+                "change",
+                lambda _w, val: dml.set_upsetting_event(val),
+            )
 
         date = urwid.Text(dml.get_date().strftime("%d/%m/%y %H:%M"))
 
