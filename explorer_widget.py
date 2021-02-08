@@ -28,6 +28,7 @@ class ExplorerWidget(urwid.WidgetWrap):
             [
                 (2, title),
                 ("weight", 1, entries_list),
+                ("pack", urwid.Text("Esc: Exit"))
             ]
         )
         self._w.original_widget = w
