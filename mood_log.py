@@ -7,8 +7,18 @@ import json
 from crypto import Crypto
 
 DISTORTIONS = {
-    "SB": "Self Blame",
+    "AON": "All-or-Nothing Thinking",
+    "OG": "Overgeneralization",
     "MF": "Mental Filter",
+    "DP": "Discounting the Positive",
+    "MR": "Mind Reading",
+    "FT": "Fortune Telling",
+    "MAG": "Magnification",
+    "MIN": "Minimization",
+    "SH": "Should Statements",
+    "LAB": "Labelling",
+    "SB": "Self Blame",
+    "OB": "Other Blame",
 }
 
 # Note: List instead of set because we need to keep the order when showing in UI
