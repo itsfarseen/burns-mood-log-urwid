@@ -250,4 +250,4 @@ class DistortionsPopupLauncher(urwid.PopUpLauncher):
         return fn
 
     def get_pop_up_parameters(self):
-        return {"left": 0, "top": 1, "overlay_width": 32, "overlay_height": 7}
+        return {"left": 0, "top": 1, "overlay_width": 32, "overlay_height": 16}
