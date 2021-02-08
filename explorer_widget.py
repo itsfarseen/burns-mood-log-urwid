@@ -21,12 +21,12 @@ class ExplorerWidget(urwid.WidgetWrap):
         entries_list = urwid.ListBox(urwid.SimpleFocusListWalker(entry_widgets))
         entries_list = urwid.LineBox(entries_list)
 
+        title = urwid.Text("Mood Log Explorer", align="center")
+        title = urwid.AttrMap(title, "bright")
+        title = urwid.Filler(title, top=1)
         w = urwid.Pile(
             [
-                (
-                    "pack",
-                    urwid.AttrMap(urwid.Text("Mood Log Explorer"), "bright"),
-                ),
+                (2, title),
                 ("weight", 1, entries_list),
             ]
         )
