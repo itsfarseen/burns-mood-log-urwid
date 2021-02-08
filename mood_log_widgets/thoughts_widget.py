@@ -221,6 +221,13 @@ class DistortionsPopup(urwid.WidgetWrap):
 
         return fn
 
+    def keypress(self, size, key):
+        if key == "esc":
+            self._emit("close")
+            return None
+
+        return super().keypress(size, key)
+
 
 class DistortionsPopupLauncher(urwid.PopUpLauncher):
     def __init__(self, distortions: Distortions):
