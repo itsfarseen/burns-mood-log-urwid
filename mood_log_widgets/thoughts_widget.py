@@ -87,7 +87,9 @@ class ThoughtsRow(urwid.WidgetWrap):
             negative_thought = urwid.Text(thought.get_negative_thought())
             pct_before = urwid.Text(str(thought.get_pct_before()))
             pct_after = urwid.Text(str(thought.get_pct_after()))
-            distortions = urwid.Text(self._thought.get_distortions().get_label())
+            distortions = urwid.Text(
+                self._thought.get_distortions().get_label()
+            )
             positive_thought = urwid.Text(thought.get_positive_thought())
             pct_belief = urwid.Text(str(thought.get_pct_belief()))
             del_btn = urwid.Text("")
@@ -101,12 +103,18 @@ class ThoughtsRow(urwid.WidgetWrap):
             )
 
             pct_before = urwid.IntEdit(default=thought.get_pct_before())
-            urwid.connect_signal(pct_before, "change", self._update_pct_before_cb())
+            urwid.connect_signal(
+                pct_before, "change", self._update_pct_before_cb()
+            )
 
             pct_after = urwid.IntEdit(default=thought.get_pct_after())
-            urwid.connect_signal(pct_after, "change", self._update_pct_after_cb())
+            urwid.connect_signal(
+                pct_after, "change", self._update_pct_after_cb()
+            )
 
-            distortions = DistortionsPopupLauncher(self._thought.get_distortions())
+            distortions = DistortionsPopupLauncher(
+                self._thought.get_distortions()
+            )
 
             positive_thought = urwid.Edit(
                 edit_text=thought.get_positive_thought(), multiline=True
@@ -116,7 +124,9 @@ class ThoughtsRow(urwid.WidgetWrap):
             )
 
             pct_belief = urwid.IntEdit(default=thought.get_pct_belief())
-            urwid.connect_signal(pct_belief, "change", self._update_pct_belief_cb())
+            urwid.connect_signal(
+                pct_belief, "change", self._update_pct_belief_cb()
+            )
 
             del_btn = Button("Del")
             urwid.connect_signal(
