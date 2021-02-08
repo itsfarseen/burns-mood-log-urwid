@@ -1,11 +1,16 @@
 import json
 import datetime
+from pathlib import Path
+import pathlib
+import shutil
+import json
 
 DISTORTIONS = {
     "SB": "Self Blame",
     "MF": "Mental Filter",
 }
 
+# Note: List instead of set because we need to keep the order when showing in UI
 EMOTIONS = [
     ["Sad", "Blue", "Depressed", "Down", "Unhappy"],
     ["Anxious", "Worried", "Panicky", "Nervous", "Frightened"],
@@ -30,6 +35,9 @@ class ReadOnlyGuard:
 
     def is_dirty(self):
         return self._dirty
+
+    def clear_dirty(self):
+        self._dirty = False
 
 
 class Emotions:
@@ -79,6 +87,22 @@ class Emotions:
         assert isinstance(val, int)
         self._pct_after = val
 
+    def todict(self):
+        return {
+            "variants": list(self._variants),
+            "selected": list(self._selected),
+            "pct_before": self._pct_before,
+            "pct_after": self._pct_after,
+        }
+
+    def fromdict(self, obj):
+        self._readonly_guard.assert_not_readonly()
+
+        self._variants = list(obj["variants"])
+        self._selected = set(obj["selected"])
+        self.set_pct_before(obj["pct_before"])
+        self.set_pct_after(obj["pct_after"])
+
 
 class Distortions:
     def __init__(self, readonly_guard):
@@ -109,6 +133,14 @@ class Distortions:
 
         keys = list(DISTORTIONS.keys())
         self._selected.sort(key=lambda k: keys.index(k))
+
+    def todict(self):
+        return {"selected": self._selected}
+
+    def fromdict(self, obj):
+        self._readonly_guard.assert_not_readonly()
+
+        self._selected = obj["selected"]
 
 
 class Thought:
@@ -170,11 +202,32 @@ class Thought:
     def get_distortions(self):
         return self._distortions
 
+    def todict(self):
+        return {
+            "negative_thought": self._negative_thought,
+            "pct_before": self._pct_before,
+            "pct_after": self._pct_after,
+            "positive_thought": self._positive_thought,
+            "pct_belief": self._pct_belief,
+            "distortions": self._distortions.todict(),
+        }
+
+    def fromdict(self, obj):
+        self._readonly_guard.assert_not_readonly()
+
+        self.set_negative_thought(obj["negative_thought"])
+        self.set_pct_before(obj["pct_before"])
+        self.set_pct_after(obj["pct_after"])
+        self.set_positive_thought(obj["positive_thought"])
+        self.set_pct_belief(obj["pct_belief"])
+        self._distortions.fromdict(obj["distortions"])
+
 
 class MoodLog:
-    def __init__(self, readonly=True):
+    def __init__(self, filename, readonly=True, date=None):
         self._readonly_guard = ReadOnlyGuard(readonly)
-        self._date = datetime.datetime.now()
+        self._date = date or datetime.datetime.now()
+        self._filename = filename
         self._upsetting_event = ""
         self._emotions = [
             Emotions(variants, self._readonly_guard) for variants in EMOTIONS
@@ -219,8 +272,60 @@ class MoodLog:
 
         del self._thoughts[idx]
 
-    # def save(self, filename):
-    #     json.dump(self.data, open(filename, "w"))
-    #
-    # def read(self, filename):
-    #     self.data = json.load(open(filename, "r"))
+    def todict(self):
+        return {
+            "date": self._date.strftime("%Y/%m/%d %H:%M"),
+            "upsetting_event": self._upsetting_event,
+            "emotions": [emotion.todict() for emotion in self._emotions],
+            "thoughts": [thought.todict() for thought in self._thoughts],
+        }
+
+    def fromdict(self, obj):
+        self._readonly_guard.assert_not_readonly()
+
+        self._date = datetime.datetime.strptime(obj["date"], "%Y/%m/%d %H:%M")
+        self.set_upsetting_event(obj["upsetting_event"])
+        self._emotions = []
+        for emdict in obj["emotions"]:
+            em = Emotions(variants=None, readonly_guard=self._readonly_guard)
+            em.fromdict(emdict)
+            self._emotions.append(em)
+
+        self._thoughts = []
+        for thdict in obj["thoughts"]:
+            th = Thought(self._readonly_guard)
+            th.fromdict(thdict)
+            self._thoughts.append(th)
+
+    def fileexists(self):
+        path = Path(self._filename)
+        return path.exists()
+
+    def save(self):
+        path = Path(self._filename)
+        if path.exists():
+            tempdir = Path(".") / ".dmlbackups"
+            if not tempdir.exists():
+                tempdir.mkdir()
+
+            now = datetime.datetime.now()
+            nowstr = now.strftime("%Y-%m-%d--%H-%M")
+            bakfilename = path.name + "-" + nowstr + ".bak"
+            bakfile = tempdir / bakfilename
+            shutil.copyfile(path, bakfile)
+
+        obj = self.todict()
+        f = open(path, "w")
+        json.dump(obj, f)
+        f.close()
+
+        self._readonly_guard.clear_dirty()
+
+    def load(self):
+        path = Path(self._filename)
+        f = open(path, "r")
+        obj = json.load(f)
+        f.close()
+        self.fromdict(obj)
+
+        self._readonly_guard.clear_dirty()

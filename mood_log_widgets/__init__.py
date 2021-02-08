@@ -5,10 +5,17 @@ from mood_log import MoodLog
 import urwid
 import sys
 
-shortcuts = {"save": "ctrl o", "back": "ctrl x"}
+shortcuts = {
+    "save": "ctrl o",
+    "toggle-edit": "ctrl x",
+    "back": "esc",
+    "discard": "ctrl r",
+}
 
 
 class MoodLogWidget(urwid.WidgetWrap):
+    signals = ["close"]
+
     def __init__(self, dml: MoodLog):
         self._dml = dml
 
@@ -30,25 +37,27 @@ class MoodLogWidget(urwid.WidgetWrap):
         self._w.original_widget = frame
 
     def keypress(self, size, key):
-        if self._dml.is_readonly():
-            if key == shortcuts["back"]:
+        if key == shortcuts["toggle-edit"]:
+            if self._dml.is_readonly():
                 self._dml.set_readonly(False)
-                self._render()
-                return None
-        else:
+            else:
+                self._dml.set_readonly(True)
+            self._render()
+        elif key == shortcuts["back"]:
             if not self._dml.is_dirty():
-                if key == shortcuts["back"]:
-                    self._dml.set_readonly(True)
-                    self._render()
-                    return None
-
-            if key == shortcuts["save"]:
+                self._emit("close")
+        elif key == shortcuts["discard"]:
+            self._emit("close")
+        elif key == shortcuts["save"]:
+            if self._dml.is_dirty():
                 self._dml.save()
-                return None
+                self._footer.update_status()
+        else:
+            retval = super().keypress(size, key)
+            self._footer.update_status()
+            return retval
 
-        retval = super().keypress(size, key)
-        self._footer.update_status()
-        return retval
+        return None
 
 
 class HeaderWidget(urwid.WidgetWrap):
@@ -83,24 +92,39 @@ class HeaderWidget(urwid.WidgetWrap):
 class FooterWidget(urwid.WidgetWrap):
     def __init__(self, dml: MoodLog):
         self._dml = dml
-        self._status = urwid.Text("")
 
-        if dml.is_readonly():
-            shortcuts = urwid.Text("Ctrl-X: Edit")
-        else:
-            shortcuts = urwid.Text("Ctrl-O: Save  Ctrl-X: Go back")
-
-        w = urwid.Columns([("weight", 1, shortcuts), ("pack", self._status)])
-        super().__init__(w)
+        super().__init__(urwid.WidgetPlaceholder(urwid.Text("")))
 
         self.update_status()
 
     def update_status(self):
-        if self._dml.is_readonly():
-            status_text = "Read-only mode"
-        elif self._dml.is_dirty():
-            status_text = "Unsaved changes."
-        else:
-            status_text = "Saved."
+        dml = self._dml
 
-        self._status.set_text(status_text)
+        status = urwid.Text("")
+
+        ws = []
+        ws.append(("pack", urwid.Text("Ctrl-O: Save")))
+        if not dml.is_dirty():
+            ws.append(("pack", urwid.Text("Esc: Go Back")))
+        else:
+            ws.append(("pack", urwid.Text("Ctrl-R: Discard and Go Back")))
+        if dml.is_readonly():
+            ws.append(("pack", urwid.Text("Ctrl-X: Edit mode")))
+        else:
+            ws.append(("pack", urwid.Text("Ctrl-X: Read-only mode")))
+
+        ws.append(("weight", 1, urwid.Text("")))
+        ws.append(("pack", status))
+
+        status_text = ""
+        if self._dml.is_readonly():
+            status_text += "Read-only mode. "
+
+        if self._dml.is_dirty():
+            status_text += "Unsaved changes."
+        else:
+            status_text += "Saved."
+
+        status.set_text(status_text)
+
+        self._w.original_widget = urwid.Columns(ws, dividechars=3)
