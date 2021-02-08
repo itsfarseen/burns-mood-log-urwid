@@ -25,6 +25,14 @@ DISTORTIONS = {
 EMOTIONS = [
     ["Sad", "Blue", "Depressed", "Down", "Unhappy"],
     ["Anxious", "Worried", "Panicky", "Nervous", "Frightened"],
+    ["Guilty", "Remorseful", "Bad", "Ashamed"],
+    ["Inferior", "Worthless", "Inadequate", "Defective", "Incompetent"],
+    ["Lonely", "Unloved", "Unwanted", "Rejected", "Alone", "Abandoned"],
+    ["Embarassed", "Foolish", "Humiliated", "Self-conscious"],
+    ["Hopeless", "Discouraged", "Pessimistic", "Despairing"],
+    ["Frustrated", "Stuck", "Thwarted", "Defeated"],
+    ["Angry", "Mad", "Resentful", "Annoyed", "Irritated", "Upset", "Furious"],
+    ["Other"],
 ]
 
 
