@@ -10,7 +10,7 @@ class Explorer:
         assert self._rootdir.is_dir()
 
     def list(self):
-        for file in self._rootdir.iterdir():
+        for file in reversed(sorted(self._rootdir.iterdir())):
             if file.name.endswith(".dml"):
                 yield ExplorerEntry(file, type="dml")
             elif file.name.endswith(".diary"):
