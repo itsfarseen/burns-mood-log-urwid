@@ -2,7 +2,7 @@ import urwid
 
 
 class BreadCrumb(urwid.Widget):
-    _sizing = frozenset(["flow"])
+    _sizing = frozenset(["flow", "fixed"])
 
     __selected = False
     signals = ["change", "postchange"]
@@ -14,6 +14,9 @@ class BreadCrumb(urwid.Widget):
 
     def rows(self, size, focus=False):
         return 1
+
+    def pack(self, size, focus=False):
+        return (len(self._label), 1)
 
     def render(self, size, focus=False):
         text = self._label

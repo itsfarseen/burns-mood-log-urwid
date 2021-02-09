@@ -46,9 +46,9 @@ class EmotionsRow(urwid.WidgetWrap):
             urwid.connect_signal(
                 btn, "change", self._toggle_emotion_cb(emotion)
             )
-            btns.append(btn)
+            btns.append((14, btn))
 
-        btns_box = urwid.Columns(btns)
+        btns_box = urwid.Columns(btns, dividechars=1)
 
         if self._emotions.is_readonly():
             pct_before = urwid.Text(str(self._emotions.get_pct_before()))

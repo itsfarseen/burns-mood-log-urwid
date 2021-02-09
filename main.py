@@ -45,7 +45,7 @@ while True:
             Explorer(Path(dml_dir)),
         ),
         align="center",
-        width=120,
+        width=130,
     )
 
     loop = urwid.MainLoop(root, palette, unhandled_input=unhandled_input, pop_ups=True)

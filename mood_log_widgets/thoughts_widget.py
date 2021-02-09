@@ -61,14 +61,14 @@ class ThoughtsHeader(urwid.WidgetWrap):
         header = urwid.Columns(
             [
                 ("weight", 6, urwid.Text("Negative thought")),
-                ("weight", 1, urwid.Text("% Bef.")),
-                ("weight", 1, urwid.Text("% Aft.")),
+                ("weight", 1, urwid.Text("% Bef")),
+                ("weight", 1, urwid.Text("% Aft")),
                 ("weight", 3, urwid.Text("Distortions")),
                 ("weight", 6, urwid.Text("Positive thought")),
-                ("weight", 1, urwid.Text("% Belf.")),
+                ("weight", 1, urwid.Text("% Belf")),
                 (5, urwid.Text("")),
             ],
-            dividechars=3,
+            dividechars=2,
         )
         header = urwid.AttrMap(header, "bright")
         divider = urwid.Divider("-")
@@ -141,7 +141,7 @@ class ThoughtsRow(urwid.WidgetWrap):
         ws.append(("weight", 1, pct_belief))
         ws.append((5, del_btn))
 
-        row = urwid.Columns(ws, dividechars=3)
+        row = urwid.Columns(ws, dividechars=2)
         divider = urwid.Divider(".")
         w = urwid.Pile([("pack", row), ("pack", divider)])
         super().__init__(w)
