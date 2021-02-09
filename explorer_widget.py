@@ -1,8 +1,10 @@
 import urwid
 from button import Button
 from mood_log_widgets import MoodLogWidget
+from diary_widget import DiaryWidget
 from datetime import datetime
 from mood_log import MoodLog
+from diary import Diary
 
 
 class ExplorerWidget(urwid.WidgetWrap):
@@ -29,6 +31,10 @@ class ExplorerWidget(urwid.WidgetWrap):
         )
         entry_widgets.append(add_btn)
 
+        add_btn = Button("New Diary Entry")
+        urwid.connect_signal(add_btn, "click", lambda _btn: self._new_diary())
+        entry_widgets.append(add_btn)
+
         entries_list = urwid.ListBox(urwid.SimpleFocusListWalker(entry_widgets))
         entries_list = urwid.LineBox(entries_list)
 
@@ -45,15 +51,19 @@ class ExplorerWidget(urwid.WidgetWrap):
         self._w.original_widget = w
 
     def _new_mood_log(self):
-        date = datetime.now()
-        filename = date.strftime("%Y-%m-%d--%H-%M.dml")
-        dml = MoodLog(filename=filename, date=date)
-        dml.mark_dirty()
-        dmlw = MoodLogWidget(dml)
-        urwid.connect_signal(dmlw, "close", lambda _w: self._render())
-        self._w.original_widget = dmlw
+        entry = self._explorer.new_dml()
+        self._open(entry)
+
+    def _new_diary(self):
+        entry = self._explorer.new_diary()
+        self._open(entry)
 
     def _open(self, entry):
-        dmlw = MoodLogWidget(entry.open())
+        if entry.get_type() == "dml":
+            dmlw = MoodLogWidget(entry.open())
+        elif entry.get_type() == "diary":
+            dmlw = DiaryWidget(entry.open())
+        else:
+            raise ValueError("Unexpected type: " + entry.get_type())
         urwid.connect_signal(dmlw, "close", lambda _w: self._render())
         self._w.original_widget = dmlw

@@ -29,8 +29,8 @@ class Crypto:
         f = open(file, 'rb')
         fbytes = f.read()
         f.close()
-        if fbytes[0] == 123: # 123 corresponds to open brace
-            return fbytes.decode()
+        # if fbytes[0] == 123: # 123 corresponds to open brace
+        #     return fbytes.decode()
         fernet = Fernet(self._key)
         try:
             fbytes_dec = fernet.decrypt(fbytes)

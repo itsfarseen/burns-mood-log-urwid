@@ -5,6 +5,7 @@ import pathlib
 import shutil
 import json
 from crypto import Crypto
+from read_only_guard import ReadOnlyGuard
 
 DISTORTIONS = {
     "AON": "All-or-Nothing Thinking",
@@ -35,28 +36,6 @@ EMOTIONS = [
     ["Other"],
 ]
 
-
-class ReadOnlyGuard:
-    def __init__(self, readonly=True):
-        self._readonly = readonly
-        self._dirty = False
-
-    def is_readonly(self):
-        return self._readonly
-
-    def set_readonly(self, val):
-        assert isinstance(val, bool)
-        self._readonly = val
-
-    def assert_not_readonly(self):
-        assert not self._readonly
-        self._dirty = True
-
-    def is_dirty(self):
-        return self._dirty
-
-    def clear_dirty(self):
-        self._dirty = False
 
 
 class Emotions:
@@ -326,7 +305,7 @@ class MoodLog:
     def save(self):
         path = Path(self._filename)
         if path.exists():
-            tempdir = Path(".") / ".dmlbackups"
+            tempdir = path.parent / ".dmlbackups"
             if not tempdir.exists():
                 tempdir.mkdir()
 
