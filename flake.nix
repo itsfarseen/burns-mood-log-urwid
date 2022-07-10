@@ -15,29 +15,30 @@
           pkgs.python310Packages.cryptography
         ];
       };
-      packages.dml = pkgs.stdenv.mkDerivation rec {
-        name = "dml-${version}";
-        version = "0.0.4";
-        src = builtins.path { name = "dml"; path = ./.; };
-        buildInputs = [
-          (pkgs.python310.withPackages (
-            pyPkgs: [
-              pyPkgs.urwid
-              pyPkgs.cryptography
-            ]
-          ))
-        ];
-        installPhase = ''
-          mkdir -p $out/dml;
-          cp -r . $out/dml
-          mkdir -p $out/bin;
-          dd status=none of=$out/bin/dml << EOF
-          #!/bin/bash
-          ${pkgs.python310}/bin/python $out/dml/main.py \$*
-          EOF
-          chmod +x $out/bin/dml
-        '';
-      };
+      packages.dml = 
+      let python = 
+        pkgs.python310.withPackages (
+          pyPkgs: [
+            pyPkgs.urwid
+            pyPkgs.cryptography
+          ]
+        );
+      in
+        pkgs.stdenv.mkDerivation rec {
+          name = "dml-${version}";
+          version = "0.0.4";
+          src = builtins.path { name = "dml"; path = ./.; };
+          installPhase = ''
+            mkdir -p $out/dml;
+            cp -r . $out/dml
+            mkdir -p $out/bin;
+            dd status=none of=$out/bin/dml << EOF
+            #!/bin/bash
+            ${python}/bin/python $out/dml/main.py \$*
+            EOF
+            chmod +x $out/bin/dml
+          '';
+        };
       packages.default = packages.dml;
     });
 }
